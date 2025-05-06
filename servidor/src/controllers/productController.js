@@ -1,34 +1,35 @@
-import * as productService from '../services/productService.js';
+import {
+  getAllProducts,
+  getProduct,
+  saveProduct,
+  modifyProduct,
+  removeProduct
+} from '../servicios/productService.js';
 
 export const getProducts = (req, res) => {
-  const products = productService.getAllProducts();
+  const products = getAllProducts();
   res.json(products);
 };
 
 export const getProductById = (req, res) => {
-  const { pid } = req.params;
-  const product = productService.getProductById(pid);
-  if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
-  res.json(product);
+  const product = getProduct(req.params.pid);
+  if (product) res.json(product);
+  else res.status(404).send('Producto no encontrado');
 };
 
 export const createProduct = (req, res) => {
-  const productData = req.body;
-  const newProduct = productService.createProduct(productData);
+  const newProduct = saveProduct(req.body);
   res.status(201).json(newProduct);
 };
 
 export const updateProduct = (req, res) => {
-  const { pid } = req.params;
-  const updatedData = req.body;
-  const updatedProduct = productService.updateProduct(pid, updatedData);
-  if (!updatedProduct) return res.status(404).json({ error: 'Producto no encontrado' });
-  res.json(updatedProduct);
+  const updated = modifyProduct(req.params.pid, req.body);
+  if (updated) res.json(updated);
+  else res.status(404).send('Producto no encontrado');
 };
 
 export const deleteProduct = (req, res) => {
-  const { pid } = req.params;
-  const deleted = productService.deleteProduct(pid);
-  if (!deleted) return res.status(404).json({ error: 'Producto no encontrado' });
-  res.json({ message: 'Producto eliminado' });
+  const deleted = removeProduct(req.params.pid);
+  if (deleted) res.sendStatus(204);
+  else res.status(404).send('Producto no encontrado');
 };

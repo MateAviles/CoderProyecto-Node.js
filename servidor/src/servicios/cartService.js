@@ -1,56 +1,38 @@
-
 import fs from 'fs';
-const cartPath = './src/data/carts.json';
-const productPath = './src/data/products.json';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { getProduct } from './productService.js';
 
-const readCarts = () => {
-  if (!fs.existsSync(cartPath)) return [];
-  const data = fs.readFileSync(cartPath, 'utf-8');
-  return JSON.parse(data);
-};
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const filePath = path.join(__dirname, '../data/carts.json');
 
-const writeCarts = (carts) => {
-  fs.writeFileSync(cartPath, JSON.stringify(carts, null, 2));
-};
+const readCarts = () => JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+const writeCarts = (data) => fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 
-const readProducts = () => {
-  if (!fs.existsSync(productPath)) return [];
-  const data = fs.readFileSync(productPath, 'utf-8');
-  return JSON.parse(data);
-};
-
-export const createCart = () => {
+export const createNewCart = () => {
   const carts = readCarts();
-  const newCart = {
-    id: Date.now().toString(),
-    products: []
-  };
+  const newCart = { id: Date.now().toString(), products: [] };
   carts.push(newCart);
   writeCarts(carts);
   return newCart;
 };
 
-export const getCartById = (id) => {
-  const carts = readCarts();
-  return carts.find(c => c.id === id);
-};
+export const findCartById = (id) => readCarts().find(c => c.id == id);
 
-export const addProductToCart = (cid, pid) => {
+export const addToCart = (cartId, productId) => {
   const carts = readCarts();
-  const products = readProducts();
-
-  const cart = carts.find(c => c.id === cid);
+  const cart = carts.find(c => c.id == cartId);
   if (!cart) return null;
 
-  const product = products.find(p => p.id === pid);
+  const product = getProduct(productId);
   if (!product) return null;
 
-  const productInCart = cart.products.find(p => p.product === pid);
-
-  if (productInCart) {
-    productInCart.quantity++;
+  const item = cart.products.find(p => p.product === productId);
+  if (item) {
+    item.quantity++;
   } else {
-    cart.products.push({ product: pid, quantity: 1 });
+    cart.products.push({ product: productId, quantity: 1 });
   }
 
   writeCarts(carts);
