@@ -14,4 +14,8 @@ app.listen(8080, () => {
   console.log('Servidor escuchando en puerto 8080');
 });
 
+app.get('/', (req, res) => {
+  res.send('Servidor funcionando correctamente');
+});
+
  
