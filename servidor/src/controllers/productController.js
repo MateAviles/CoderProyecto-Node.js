@@ -1,3 +1,4 @@
+
 import {
   getAllProducts,
   getProduct,
@@ -5,6 +6,7 @@ import {
   modifyProduct,
   removeProduct
 } from '../servicios/productService.js';
+import { io } from '../../app.mjs';
 
 export const getProducts = (req, res) => {
   const products = getAllProducts();
@@ -19,6 +21,7 @@ export const getProductById = (req, res) => {
 
 export const createProduct = (req, res) => {
   const newProduct = saveProduct(req.body);
+  io.emit('update-products', getAllProducts()); // Emitir actualización
   res.status(201).json(newProduct);
 };
 
@@ -30,6 +33,10 @@ export const updateProduct = (req, res) => {
 
 export const deleteProduct = (req, res) => {
   const deleted = removeProduct(req.params.pid);
-  if (deleted) res.sendStatus(204);
-  else res.status(404).send('Producto no encontrado');
+  if (deleted) {
+    io.emit('update-products', getAllProducts()); // Emitir actualización
+    res.sendStatus(204);
+  } else {
+    res.status(404).send('Producto no encontrado');
+  }
 };
