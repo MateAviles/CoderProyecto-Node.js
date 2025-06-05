@@ -1,5 +1,5 @@
 
- import fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -10,7 +10,35 @@ const filePath = path.join(__dirname, '../data/products.json');
 const readProducts = () => JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 const writeProducts = (data) => fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 
-export const getAllProducts = () => readProducts();
+import Product from '../models/productModel.js'; // modelo mongoose
+
+export async function getAllProducts({ page = 1, limit = 5, sort, query }) {
+  const options = {
+    page: parseInt(page),
+    limit: parseInt(limit),
+    lean: true,
+  };
+
+  if (sort) {
+    options.sort = { price: sort === 'asc' ? 1 : -1 };
+  }
+
+  const filter = query ? { title: new RegExp(query, 'i') } : {};
+
+  const result = await Product.paginate(filter, options);
+  return result;
+}
+
+/*
+export async function getAllProducts() {
+  try {
+    const products = await Product.find().lean(); // <- MUY importante el .lean()
+    return products;
+  } catch (error) {
+    console.error('Error al obtener productos:', error);
+    return [];
+  }
+}*/
 export const getProduct = (id) => readProducts().find(p => p.id == id);
 
 export const saveProduct = (data) => {
