@@ -29,16 +29,6 @@ export async function getAllProducts({ page = 1, limit = 5, sort, query }) {
   return result;
 }
 
-/*
-export async function getAllProducts() {
-  try {
-    const products = await Product.find().lean(); // <- MUY importante el .lean()
-    return products;
-  } catch (error) {
-    console.error('Error al obtener productos:', error);
-    return [];
-  }
-}*/
 export const getProduct = (id) => readProducts().find(p => p.id == id);
 
 export const saveProduct = (data) => {

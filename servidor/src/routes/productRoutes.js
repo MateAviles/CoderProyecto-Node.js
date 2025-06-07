@@ -12,7 +12,6 @@ import {
 
 const router = express.Router();
 
-s
 router.get('/view', renderPaginatedProducts);
 
 
