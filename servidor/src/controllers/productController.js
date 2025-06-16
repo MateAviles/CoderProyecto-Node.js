@@ -1,3 +1,4 @@
+
 import Product from '../models/productModel.js';
 import { io } from '../../app.mjs';
 

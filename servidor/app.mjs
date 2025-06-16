@@ -1,3 +1,4 @@
+
 // Modulos principales
 import express from 'express';
 import { createServer } from 'http';
@@ -13,18 +14,14 @@ import cartRoutes from './src/routes/cartRoutes.js';
 import viewsRoutes from './src/routes/viewsRoutes.js';
 import { getAllProducts } from './src/servicios/productService.js';
 import Product from './src/models/product.js'; 
- 
+
 dotenv.config();
 console.log('MONGO_URI desde .env:', process.env.MONGO_URI);
 console.log('Intentando conectar a MongoDB...');
 
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('Conectado a la base de datos');
-  })
-  .catch((err) => {
-    console.error('Error al conectarse a la base de datos:', err);
-  });
+  .then(() => console.log('Conectado a la base de datos'))
+  .catch((err) => console.error('Error al conectarse a la base de datos:', err));
 
 // Para obtener la ruta actual con ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -57,14 +54,25 @@ app.use('/', viewsRoutes);
 
 // Vista de productos en tiempo real
 app.get('/realtimeproducts', async (req, res) => {
-  const products = await Product.find().lean();
-  res.render('realTimeProducts', { products });
+  try {
+    const products = await Product.find().lean();
+    res.render('realTimeProducts', { products });
+  } catch (error) {
+    console.error('Error al renderizar productos en tiempo real:', error);
+    res.status(500).send('Error interno del servidor');
+  }
 });
 
 // WebSockets
-io.on('connection', socket => {
+io.on('connection', async socket => {
   console.log('Cliente conectado por WebSocket');
-  socket.emit('update-products', getAllProducts());
+
+  try {
+    const result = await getAllProducts({}); 
+    socket.emit('update-products', result.docs); 
+  } catch (error) {
+    console.error('Error al obtener productos para WebSocket:', error);
+  }
 });
 
 // Server
@@ -72,7 +80,3 @@ const PORT = 8080;
 httpServer.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
-
-
-
- 

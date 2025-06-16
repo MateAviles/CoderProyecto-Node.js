@@ -6,47 +6,82 @@ import {
   removeProductFromCart,
   updateCartProducts,
   updateProductQuantity,
-  deleteAllProductsFromCart
+  deleteAllProductsFromCart,
 } from '../servicios/cartService.js';
 
 export const createCart = async (req, res) => {
-  const cart = await createNewCart();
-  res.status(201).json(cart);
+  try {
+    const cart = await createNewCart();
+    res.status(201).json(cart);
+  } catch (error) {
+    console.error('Error al crear carrito:', error);
+    res.status(500).json({ message: 'Error interno al crear el carrito' });
+  }
 };
 
 export const getCartById = async (req, res) => {
-  const cart = await findCartById(req.params.cid);
-  if (cart) res.json(cart);
-  else res.status(404).send('Carrito no encontrado');
+  try {
+    const cart = await findCartById(req.params.cid);
+    if (!cart) return res.status(404).json({ message: 'Carrito no encontrado' });
+    res.json(cart);
+  } catch (error) {
+    console.error('Error al obtener carrito:', error);
+    res.status(500).json({ message: 'Error interno al obtener el carrito' });
+  }
 };
 
 export const addProductToCart = async (req, res) => {
-  const updatedCart = await addToCart(req.params.cid, req.params.pid);
-  if (updatedCart) res.json(updatedCart);
-  else res.status(404).send('Carrito o producto no encontrado');
+  try {
+    const cart = await addToCart(req.params.cid, req.params.pid);
+    if (!cart) return res.status(404).json({ message: 'Carrito o producto no encontrado' });
+    res.json(cart);
+  } catch (error) {
+    console.error('Error al agregar producto al carrito:', error);
+    res.status(500).json({ message: 'Error interno al agregar producto' });
+  }
 };
 
-export const deleteProductFromCart = async (req, res) => {
-  const updatedCart = await removeProductFromCart(req.params.cid, req.params.pid);
-  if (updatedCart) res.json(updatedCart);
-  else res.status(404).send('Carrito o producto no encontrado');
+export const removeProduct = async (req, res) => {
+  try {
+    const cart = await removeProductFromCart(req.params.cid, req.params.pid);
+    if (!cart) return res.status(404).json({ message: 'Carrito o producto no encontrado' });
+    res.json(cart);
+  } catch (error) {
+    console.error('Error al eliminar producto del carrito:', error);
+    res.status(500).json({ message: 'Error interno al eliminar producto' });
+  }
 };
 
 export const updateCart = async (req, res) => {
-  const updatedCart = await updateCartProducts(req.params.cid, req.body.products);
-  if (updatedCart) res.json(updatedCart);
-  else res.status(404).send('Carrito no encontrado');
+  try {
+    const cart = await updateCartProducts(req.params.cid, req.body.products);
+    if (!cart) return res.status(404).json({ message: 'Carrito no encontrado' });
+    res.json(cart);
+  } catch (error) {
+    console.error('Error al actualizar carrito:', error);
+    res.status(500).json({ message: 'Error interno al actualizar carrito' });
+  }
 };
 
 export const updateProductQty = async (req, res) => {
-  const { quantity } = req.body;
-  const updatedCart = await updateProductQuantity(req.params.cid, req.params.pid, quantity);
-  if (updatedCart) res.json(updatedCart);
-  else res.status(404).send('Carrito o producto no encontrado');
+  try {
+    const { quantity } = req.body;
+    const cart = await updateProductQuantity(req.params.cid, req.params.pid, quantity);
+    if (!cart) return res.status(404).json({ message: 'Carrito o producto no encontrado' });
+    res.json(cart);
+  } catch (error) {
+    console.error('Error al actualizar cantidad de producto:', error);
+    res.status(500).json({ message: 'Error interno al actualizar cantidad' });
+  }
 };
 
-export const deleteAllProducts = async (req, res) => {
-  const updatedCart = await deleteAllProductsFromCart(req.params.cid);
-  if (updatedCart) res.json(updatedCart);
-  else res.status(404).send('Carrito no encontrado');
+export const clearCart = async (req, res) => {
+  try {
+    const cart = await deleteAllProductsFromCart(req.params.cid);
+    if (!cart) return res.status(404).json({ message: 'Carrito no encontrado' });
+    res.json(cart);
+  } catch (error) {
+    console.error('Error al vaciar carrito:', error);
+    res.status(500).json({ message: 'Error interno al vaciar carrito' });
+  }
 };
