@@ -2,10 +2,11 @@
 
 import { Router } from 'express';
 import { getAllProducts } from '../servicios/productService.js';
+import { renderPaginatedProducts } from '../controllers/productController.js';
 
 const router = Router();
 
-// Ruta principal con todos los productos
+// Ruta principal con todos los productos 
 router.get('/', async (req, res) => {
   const { page, limit, sort, query } = req.query;
 
@@ -31,9 +32,12 @@ router.get('/', async (req, res) => {
   });
 });
 
-// Vista en tiempo real
+// Vista en tiempo real con WebSocket
 router.get('/realtimeproducts', (req, res) => {
   res.render('realtimeproducts', { title: 'Productos en tiempo real' });
 });
+
+//  vista paginada con filtros y ordenamiento
+router.get('/products/view', renderPaginatedProducts);
 
 export default router;

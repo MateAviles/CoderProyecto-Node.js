@@ -7,17 +7,15 @@ import {
   updateProduct,
   deleteProduct,
   renderPaginatedProducts,
-  getPaginatedProductsJson // 
+  getPaginatedProductsJson 
 } from '../controllers/productController.js';
 
 const router = express.Router();
 
-router.get('/view', renderPaginatedProducts);
-
-
+router.get('/products/view', renderPaginatedProducts);
 router.get('/paginated', getPaginatedProductsJson);
 
-// Rutas API
+// Rutas API 
 router.get('/', getProducts);
 router.get('/:pid', getProductById);
 router.post('/', createProduct);
@@ -25,5 +23,6 @@ router.put('/:pid', updateProduct);
 router.delete('/:pid', deleteProduct);
 
 export default router;
+
 
 

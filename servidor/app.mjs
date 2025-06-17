@@ -15,25 +15,6 @@ import viewsRoutes from './src/routes/viewsRoutes.js';
 import { getAllProducts } from './src/servicios/productService.js';
 import Product from './src/models/product.js'; 
 
-const originalLog = console.log;
-console.log = function (...args) {
-  for (const arg of args) {
-    if (typeof arg === 'object') {
-      try {
-        const str = JSON.stringify(arg);
-        if (str.length > 1000) { // por ejemplo, 1000 chars
-          originalLog('Log omitido por ser muy largo:', str.substring(0, 500) + '...');
-          return;
-        }
-      } catch {
-        // JSON.stringify puede fallar si hay referencias circulares
-      }
-    }
-  }
-  originalLog(...args);
-};
-
-
 // Configuración de entorno
 dotenv.config();
 console.log('MONGO_URI desde .env:', process.env.MONGO_URI);

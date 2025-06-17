@@ -1,6 +1,42 @@
 
 <h1 class="text-2xl font-bold mb-4">Lista de Productos</h1>
 
+
+<form id="filterForm" class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+  <div>
+    <label for="category" class="block text-sm font-medium">Categoría</label>
+    <select id="category" name="category" class="mt-1 block w-full border rounded p-2">
+      <option value="">Todas</option>
+      <option value="tecnología">Tecnología</option>
+      <option value="hogar">Hogar</option>
+      <option value="ropa">Ropa</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="status" class="block text-sm font-medium">Disponibilidad</label>
+    <select id="status" name="status" class="mt-1 block w-full border rounded p-2">
+      <option value="">Todos</option>
+      <option value="true">Disponible</option>
+      <option value="false">No disponible</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="sort" class="block text-sm font-medium">Ordenar por precio</label>
+    <select id="sort" name="sort" class="mt-1 block w-full border rounded p-2">
+      <option value="">Sin ordenar</option>
+      <option value="asc">Menor a mayor</option>
+      <option value="desc">Mayor a menor</option>
+    </select>
+  </div>
+
+  <div class="flex items-end">
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded w-full">Aplicar filtros</button>
+  </div>
+</form>
+
+
 <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
   {{#each products}}
     <div class="p-4 border rounded shadow">
@@ -9,10 +45,12 @@
       <p><strong>Precio:</strong> ${{this.price}}</p>
       <p><strong>Categoría:</strong> {{this.category}}</p>
       <p><strong>Stock:</strong> {{this.stock}}</p>
+      <p><strong>Estado:</strong> {{#if this.status}}Disponible{{else}}No disponible{{/if}}</p>
       <a href="/products/{{this._id}}" class="text-blue-600 underline mt-2 inline-block">Ver más</a>
     </div>
   {{/each}}
 </div>
+
 
 <div class="mt-6 flex justify-center space-x-4">
   {{#if hasPrevPage}}
@@ -25,6 +63,37 @@
     <a href="{{nextLink}}" class="px-4 py-2 bg-blue-500 text-white rounded">Siguiente</a>
   {{/if}}
 </div>
+
+
+<script>
+  const form = document.getElementById('filterForm');
+  const params = new URLSearchParams(window.location.search);
+
+  // Mantener valores seleccionados en el formulario
+  document.getElementById('category').value = params.get('query') && !['true','false'].includes(params.get('query')) ? params.get('query') : '';
+  document.getElementById('status').value = (params.get('query') === 'true' || params.get('query') === 'false') ? params.get('query') : '';
+  document.getElementById('sort').value = params.get('sort') || '';
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const category = form.category.value;
+    const status = form.status.value;
+    const sort = form.sort.value;
+
+    const newParams = new URLSearchParams();
+
+    
+    if (category) newParams.append('query', category);
+    else if (status) newParams.append('query', status);
+
+    if (sort) newParams.append('sort', sort);
+    newParams.append('page', 1); 
+
+    window.location.href = `/products/view?${newParams.toString()}`;
+  });
+</script>
+
 
 
 

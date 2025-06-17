@@ -11,7 +11,7 @@ const productSchema = new mongoose.Schema({
   status: { type: Boolean, default: true }
 }, { timestamps: true });
 
-productSchema.plugin(mongoosePaginate); // ⚠️ IMPORTANTE
+productSchema.plugin(mongoosePaginate); 
 
 const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
 export default Product;
