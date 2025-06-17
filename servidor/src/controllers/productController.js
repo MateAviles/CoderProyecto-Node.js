@@ -7,7 +7,7 @@ import { getAllProducts } from '../servicios/productService.js';
 
 export const getProducts = async (req, res) => {
   try {
-    const { page = 1, limit = 10, sort, query } = req.query;
+    const { page = 1, limit = 10, sort, category, status } = req.query;
 
     const {
       docs: payload,
@@ -17,9 +17,15 @@ export const getProducts = async (req, res) => {
       page: currentPage,
       hasPrevPage,
       hasNextPage,
-    } = await getAllProducts({ page, limit, sort, query });
+    } = await getAllProducts({ page, limit, sort, category, status });
 
     const baseUrl = `${req.protocol}://${req.get('host')}${req.baseUrl}`;
+    const queryParams = new URLSearchParams(req.query);
+
+    const buildLink = (newPage) => {
+      queryParams.set('page', newPage);
+      return `${baseUrl}?${queryParams.toString()}`;
+    };
 
     res.json({
       status: 'success',
@@ -30,8 +36,8 @@ export const getProducts = async (req, res) => {
       page: currentPage,
       hasPrevPage,
       hasNextPage,
-      prevLink: hasPrevPage ? `${baseUrl}?page=${prevPage}` : null,                                                           
-      nextLink: hasNextPage ? `${baseUrl}?page=${nextPage}` : null,
+      prevLink: hasPrevPage ? buildLink(prevPage) : null,
+      nextLink: hasNextPage ? buildLink(nextPage) : null,
     });
   } catch (error) {
     console.error(error);
@@ -41,7 +47,6 @@ export const getProducts = async (req, res) => {
     });
   }
 };
-
 
 // Obtener un solo producto por ID
 export const getProductById = async (req, res) => {

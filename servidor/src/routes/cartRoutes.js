@@ -7,8 +7,8 @@ import {
   removeProduct,
   updateCart,
   updateProductQty,
+  clearCart,
 } from '../controllers/cartController.js';
-import { deleteAllProductsFromCart } from '../servicios/cartService.js';
 
 const router = express.Router();
 
@@ -18,6 +18,7 @@ router.post('/:cid/products/:pid', addProductToCart);
 router.delete('/:cid/products/:pid', removeProduct);
 router.put('/:cid', updateCart);
 router.put('/:cid/products/:pid', updateProductQty);
-router.delete('/:cid', deleteAllProductsFromCart);
+router.delete('/:cid', clearCart);
 
 export default router;
+

@@ -1,19 +1,24 @@
 
 import Product from '../models/productModel.js'; // modelo mongoose
 
-export async function getAllProducts({ page = 1, limit = 5, sort, query }) {
+export async function getAllProducts({ page = 1, limit = 10, sort, category, status }) {
   const options = {
     page: parseInt(page),
     limit: parseInt(limit),
-    lean: true,
+    lean: true
   };
 
   if (sort) {
     options.sort = { price: sort === 'asc' ? 1 : -1 };
   }
 
-  const filter = query ? { title: new RegExp(query, 'i') } : {};
+  const filter = {};
+  if (category) filter.category = category;
+  if (status !== undefined) {
+    if (status === 'true' || status === 'false') {
+      filter.status = status === 'true';
+    }
+  }
 
-  const result = await Product.paginate(filter, options);
-  return result;
+  return await Product.paginate(filter, options);
 }

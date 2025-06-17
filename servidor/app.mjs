@@ -15,10 +15,31 @@ import viewsRoutes from './src/routes/viewsRoutes.js';
 import { getAllProducts } from './src/servicios/productService.js';
 import Product from './src/models/product.js'; 
 
+const originalLog = console.log;
+console.log = function (...args) {
+  for (const arg of args) {
+    if (typeof arg === 'object') {
+      try {
+        const str = JSON.stringify(arg);
+        if (str.length > 1000) { // por ejemplo, 1000 chars
+          originalLog('Log omitido por ser muy largo:', str.substring(0, 500) + '...');
+          return;
+        }
+      } catch {
+        // JSON.stringify puede fallar si hay referencias circulares
+      }
+    }
+  }
+  originalLog(...args);
+};
+
+
+// Configuración de entorno
 dotenv.config();
 console.log('MONGO_URI desde .env:', process.env.MONGO_URI);
 console.log('Intentando conectar a MongoDB...');
 
+// Conexión a MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Conectado a la base de datos'))
   .catch((err) => console.error('Error al conectarse a la base de datos:', err));
@@ -36,8 +57,8 @@ export { io };
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Handlebars config
-const viewsPath = path.resolve(__dirname, '../views');
+// Handlebars config (con views adentro del servidor)
+const viewsPath = path.resolve(__dirname, './views');
 const layoutsPath = path.resolve(viewsPath, 'layouts');
 
 app.engine('handlebars', engine({
@@ -56,7 +77,7 @@ app.use('/', viewsRoutes);
 app.get('/realtimeproducts', async (req, res) => {
   try {
     const products = await Product.find().lean();
-    res.render('realTimeProducts', { products });
+    res.render('realtimeproducts', { title: 'Productos en tiempo real', products });
   } catch (error) {
     console.error('Error al renderizar productos en tiempo real:', error);
     res.status(500).send('Error interno del servidor');
@@ -68,8 +89,8 @@ io.on('connection', async socket => {
   console.log('Cliente conectado por WebSocket');
 
   try {
-    const result = await getAllProducts({}); 
-    socket.emit('update-products', result.docs); 
+    const result = await getAllProducts({});
+    socket.emit('update-products', result.docs);
   } catch (error) {
     console.error('Error al obtener productos para WebSocket:', error);
   }

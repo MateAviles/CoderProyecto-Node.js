@@ -1,6 +1,9 @@
 
+import mongoose from 'mongoose';
 import Cart from '../models/cart.js';
 import Product from '../models/product.js';
+
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // Crear un nuevo carrito vacío
 export const createNewCart = async () => {
@@ -12,6 +15,11 @@ export const createNewCart = async () => {
 // Buscar un carrito por ID y hacer populate de productos
 export const findCartById = async (cid) => {
   try {
+    if (!isValidObjectId(cid)) {
+      console.error('ID de carrito inválido:', cid);
+      return null;
+    }
+
     const cart = await Cart.findById(cid).populate('products.product');
     return cart;
   } catch (error) {
@@ -23,6 +31,11 @@ export const findCartById = async (cid) => {
 // Agregar un producto al carrito (o aumentar cantidad si ya existe)
 export const addToCart = async (cid, pid) => {
   try {
+    if (!isValidObjectId(cid) || !isValidObjectId(pid)) {
+      console.error('ID inválido en addToCart:', cid, pid);
+      return null;
+    }
+
     const cart = await Cart.findById(cid);
     if (!cart) return null;
 
@@ -37,7 +50,7 @@ export const addToCart = async (cid, pid) => {
     }
 
     await cart.save();
-    return cart;
+    return await Cart.findById(cart._id).populate('products.product');
   } catch (error) {
     console.error('Error al agregar producto:', error);
     return null;
@@ -47,12 +60,18 @@ export const addToCart = async (cid, pid) => {
 // Eliminar un producto del carrito
 export const removeProductFromCart = async (cid, pid) => {
   try {
+    if (!isValidObjectId(cid) || !isValidObjectId(pid)) {
+      console.error('ID inválido en removeProductFromCart:', cid, pid);
+      return null;
+    }
+
     const cart = await Cart.findById(cid);
     if (!cart) return null;
 
     cart.products = cart.products.filter(p => !p.product.equals(pid));
     await cart.save();
-    return cart;
+
+    return await Cart.findById(cart._id).populate('products.product');
   } catch (error) {
     console.error('Error al eliminar producto del carrito:', error);
     return null;
@@ -62,6 +81,11 @@ export const removeProductFromCart = async (cid, pid) => {
 // Reemplazar todos los productos del carrito
 export const updateCartProducts = async (cid, newProducts) => {
   try {
+    if (!isValidObjectId(cid)) {
+      console.error('ID de carrito inválido en updateCartProducts:', cid);
+      return null;
+    }
+
     const cart = await Cart.findById(cid);
     if (!cart) return null;
 
@@ -71,7 +95,7 @@ export const updateCartProducts = async (cid, newProducts) => {
     }));
 
     await cart.save();
-    return cart;
+    return await Cart.findById(cart._id).populate('products.product');
   } catch (error) {
     console.error('Error al actualizar productos del carrito:', error);
     return null;
@@ -81,6 +105,11 @@ export const updateCartProducts = async (cid, newProducts) => {
 // Actualizar solo la cantidad de un producto específico
 export const updateProductQuantity = async (cid, pid, quantity) => {
   try {
+    if (!isValidObjectId(cid) || !isValidObjectId(pid)) {
+      console.error('ID inválido en updateProductQuantity:', cid, pid);
+      return null;
+    }
+
     const cart = await Cart.findById(cid);
     if (!cart) return null;
 
@@ -89,7 +118,8 @@ export const updateProductQuantity = async (cid, pid, quantity) => {
 
     productInCart.quantity = quantity;
     await cart.save();
-    return cart;
+
+    return await Cart.findById(cart._id).populate('products.product');
   } catch (error) {
     console.error('Error al actualizar cantidad:', error);
     return null;
@@ -99,12 +129,18 @@ export const updateProductQuantity = async (cid, pid, quantity) => {
 // Eliminar todos los productos del carrito
 export const deleteAllProductsFromCart = async (cid) => {
   try {
+    if (!isValidObjectId(cid)) {
+      console.error('ID inválido en deleteAllProductsFromCart:', cid);
+      return null;
+    }
+
     const cart = await Cart.findById(cid);
     if (!cart) return null;
 
     cart.products = [];
     await cart.save();
-    return cart;
+
+    return await Cart.findById(cart._id).populate('products.product');
   } catch (error) {
     console.error('Error al vaciar carrito:', error);
     return null;

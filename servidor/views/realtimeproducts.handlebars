@@ -1,0 +1,160 @@
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Productos en tiempo real</title>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <h1>Productos en Tiempo Real</h1>
+
+  <ul id="product-list">
+    {{#each products}}
+      <li>
+        <strong>{{title}}</strong> - ${{price}}
+        <button onclick="addToCart('{{_id}}')">Agregar</button>
+      </li>
+    {{/each}}
+  </ul>
+
+  <h2>Carrito</h2>
+  <button id="new-cart-btn">Crear nuevo carrito</button>
+  <ul id="cart-list"></ul>
+  <button onclick="clearCart()">Vaciar carrito</button>
+
+  <h2>Agregar nuevo producto</h2>
+  <form id="product-form">
+    <input type="text" name="title" placeholder="Título" required />
+    <input type="text" name="description" placeholder="Descripción" required />
+    <input type="number" name="price" placeholder="Precio" required />
+    <input type="text" name="category" placeholder="Categoría" required />
+    <input type="number" name="stock" placeholder="Stock" required />
+    <input type="text" name="thumbnail" placeholder="URL Imagen" />
+    <button type="submit">Agregar</button>
+  </form>
+
+  <script>
+    const socket = io();
+    let cartId = localStorage.getItem('cartId') || null;
+
+    // Actualizar productos en tiempo real
+    socket.on('update-products', products => {
+      const list = document.getElementById('product-list');
+      list.innerHTML = '';
+      products.forEach(p => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${p.title}</strong> - $${p.price} <button onclick="addToCart('${p._id}')">Agregar</button>`;
+        list.appendChild(li);
+      });
+    });
+
+    // Crear nuevo producto
+    document.getElementById('product-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const product = Object.fromEntries(formData.entries());
+      product.price = parseFloat(product.price);
+      product.stock = parseInt(product.stock);
+      product.status = true;
+
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(product),
+      });
+
+      if (response.ok) {
+        e.target.reset();
+      } else {
+        alert('Error al crear producto');
+      }
+    });
+
+    // Crear nuevo carrito
+    document.getElementById('new-cart-btn').addEventListener('click', async () => {
+      const res = await fetch('/api/carts', { method: 'POST' });
+      if (res.ok) {
+        const cart = await res.json();
+        cartId = cart._id || cart.id;
+        localStorage.setItem('cartId', cartId);
+        alert(`Carrito creado con ID: ${cartId}`);
+        renderCart(cart);
+      }
+    });
+
+    // Agregar producto al carrito
+    async function addToCart(productId) {
+      if (!cartId) {
+        const res = await fetch('/api/carts', { method: 'POST' });
+        const data = await res.json();
+        cartId = data._id;
+        localStorage.setItem('cartId', cartId);
+      }
+
+      const res = await fetch(`/api/carts/${cartId}/products/${productId}`, {
+        method: 'POST'
+      });
+
+      if (res.ok) {
+        const updatedCart = await res.json();
+        renderCart(updatedCart);
+      } else {
+        alert('Error al agregar producto al carrito');
+      }
+    }
+
+    // Mostrar productos del carrito
+    async function updateCartDisplay() {
+      if (!cartId) return;
+
+      const res = await fetch(`/api/carts/${cartId}`);
+      if (!res.ok) return;
+
+      const data = await res.json();
+      renderCart(data);
+    }
+
+    // Eliminar un producto del carrito
+    async function removeFromCart(productId) {
+      const res = await fetch(`/api/carts/${cartId}/products/${productId}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        updateCartDisplay();
+      } else {
+        alert('Error al eliminar producto');
+      }
+    }
+
+    // Vaciar carrito
+    async function clearCart() {
+      const res = await fetch(`/api/carts/${cartId}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        updateCartDisplay();
+      } else {
+        alert('Error al vaciar carrito');
+      }
+    }
+
+    // Renderizar carrito en pantalla
+    function renderCart(cart) {
+      const list = document.getElementById('cart-list');
+      list.innerHTML = '';
+      cart.products.forEach(p => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${p.product.title}</strong> - Cantidad: ${p.quantity} <button onclick="removeFromCart('${p.product._id}')">Eliminar</button>`;
+        list.appendChild(li);
+      });
+    }
+
+    // Mostrar carrito al cargar
+    window.addEventListener('DOMContentLoaded', updateCartDisplay); //ns como no usar DOMContentLoaded sin usar html
+  </script>
+</body>
+</html>

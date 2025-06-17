@@ -1,0 +1,31 @@
+
+<h1 class="text-2xl font-bold mb-4">Lista de Productos</h1>
+
+<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+  {{#each products}}
+    <div class="p-4 border rounded shadow">
+      <h2 class="font-semibold text-lg">{{this.title}}</h2>
+      <p>{{this.description}}</p>
+      <p><strong>Precio:</strong> ${{this.price}}</p>
+      <p><strong>Categoría:</strong> {{this.category}}</p>
+      <p><strong>Stock:</strong> {{this.stock}}</p>
+      <a href="/products/{{this._id}}" class="text-blue-600 underline mt-2 inline-block">Ver más</a>
+    </div>
+  {{/each}}
+</div>
+
+<div class="mt-6 flex justify-center space-x-4">
+  {{#if hasPrevPage}}
+    <a href="{{prevLink}}" class="px-4 py-2 bg-blue-500 text-white rounded">Anterior</a>
+  {{/if}}
+
+  <span class="px-4 py-2 border rounded">Página {{page}} de {{totalPages}}</span>
+
+  {{#if hasNextPage}}
+    <a href="{{nextLink}}" class="px-4 py-2 bg-blue-500 text-white rounded">Siguiente</a>
+  {{/if}}
+</div>
+
+
+
+
